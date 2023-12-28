@@ -161,7 +161,7 @@ void Controller::readyRead(void)
         quint32 value, key;
 
         memcpy(&value, buffer.constData(), sizeof(value));
-        key = m_dh->privateKey(qFromBigEndian(value));
+        key = qToBigEndian(m_dh->privateKey(qFromBigEndian(value)));
         hash = QCryptographicHash::hash(QByteArray(reinterpret_cast <char*> (&key), sizeof(key)), QCryptographicHash::Md5);
 
         m_aes->init(hash, QCryptographicHash::hash(hash, QCryptographicHash::Md5));
