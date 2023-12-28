@@ -1,0 +1,6 @@
+variables:
+  NAME: homed-cloud
+
+include:
+- project: 'homed/services/homed-common'
+  file: '.gitlab-ci/pipeline.yml'
