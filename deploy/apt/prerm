@@ -1,0 +1,6 @@
+#!/bin/bash
+
+systemctl stop homed-cloud.service
+systemctl disable homed-cloud.service
+
+exit 0

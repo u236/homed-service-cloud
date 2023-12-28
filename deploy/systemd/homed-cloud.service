@@ -1,0 +1,11 @@
+[Unit]
+Description=HOMEd Cloud Service
+
+[Service]
+ExecStart=/usr/bin/homed-cloud
+Environment=LD_LIBRARY_PATH=/lib
+KillSignal=SIGTERM
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
