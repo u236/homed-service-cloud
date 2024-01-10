@@ -5,6 +5,9 @@
 
 Controller::Controller(const QString &configFile) : HOMEd(configFile), m_socket(new QTcpSocket(this)), m_timer(new QTimer(this)), m_aes(new AES128), m_dh(new DH), m_handshake(false)
 {
+    logInfo << "Starting version" << SERVICE_VERSION;
+    logInfo << "Configuration file is" << getConfig()->fileName();
+
     m_retained = {"device", "expose", "service", "status"}; // TODO: check this
 
     connect(m_socket, &QTcpSocket::connected, this, &Controller::connected);
@@ -28,14 +31,14 @@ Controller::Controller(const QString &configFile) : HOMEd(configFile), m_socket(
     connectToHost();
 }
 
-void Controller::parseData(void)
+void Controller::parseData(QByteArray &buffer)
 {
     QJsonObject json;
     QString action, topic;
 
-    m_aes->cbcDecrypt(m_buffer);
+    m_aes->cbcDecrypt(buffer);
 
-    json = QJsonDocument::fromJson(m_buffer.constData()).object();
+    json = QJsonDocument::fromJson(buffer.constData()).object();
     action = json.value("action").toString();
     topic = json.value("topic").toString();
 
@@ -126,15 +129,15 @@ void Controller::mqttReceived(const QByteArray &message, const QMqttTopicName &t
 
 void Controller::connected(void)
 {
-    handshakeRequest data;
+    handshakeRequest handshake;
 
     logInfo << "Connected to server";
 
-    data.prime = qToBigEndian(m_dh->prime());
-    data.generator = qToBigEndian(m_dh->generator());
-    data.sharedKey = qToBigEndian(m_dh->sharedKey());
+    handshake.prime = qToBigEndian(m_dh->prime());
+    handshake.generator = qToBigEndian(m_dh->generator());
+    handshake.sharedKey = qToBigEndian(m_dh->sharedKey());
 
-    m_socket->write(QByteArray(reinterpret_cast <char*> (&data), sizeof(data)));
+    m_socket->write(QByteArray(reinterpret_cast <char*> (&handshake), sizeof(handshake)));
 }
 
 void Controller::disconnected(void)
@@ -153,14 +156,14 @@ void Controller::errorOccurred(QAbstractSocket::SocketError error)
 
 void Controller::readyRead(void)
 {
-    QByteArray buffer = m_socket->readAll();
+    QByteArray data = m_socket->readAll();
 
     if (!m_handshake)
     {
         QByteArray hash;
         quint32 value, key;
 
-        memcpy(&value, buffer.constData(), sizeof(value));
+        memcpy(&value, data.constData(), sizeof(value));
         key = qToBigEndian(m_dh->privateKey(qFromBigEndian(value)));
         hash = QCryptographicHash::hash(QByteArray(reinterpret_cast <char*> (&key), sizeof(key)), QCryptographicHash::Md5);
 
@@ -171,26 +174,25 @@ void Controller::readyRead(void)
     }
     else
     {
-        for (int i = 0; i < buffer.length(); i++)
+        QByteArray buffer;
+        int length;
+
+        m_buffer.append(data); // TODO: check for overflow
+
+        while((length = m_buffer.indexOf(0x43)) > 0)
         {
-            switch (buffer.at(i))
+            for (int i = 0; i < length; i++)
             {
-                case 0x42: m_buffer.clear(); break;
-                case 0x43: parseData(); break;
-
-                case 0x44:
-
-                    switch (buffer.at(++i))
-                    {
-                        case 0x62: m_buffer.append(0x42); break;
-                        case 0x63: m_buffer.append(0x43); break;
-                        case 0x64: m_buffer.append(0x44); break;
-                    }
-
-                    break;
-
-                default: m_buffer.append(buffer.at(i)); break;
+                switch (m_buffer.at(i))
+                {
+                    case 0x42: buffer.clear(); break;
+                    case 0x44: buffer.append(m_buffer.at(++i) & 0xDF); break;
+                    default:   buffer.append(m_buffer.at(i)); break;
+                }
             }
+
+            m_buffer.remove(0, length + 1);
+            parseData(buffer);
         }
     }
 }

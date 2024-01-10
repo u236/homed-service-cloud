@@ -1,7 +1,7 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#define SERVICE_VERSION     "1.0.1"
+#define SERVICE_VERSION     "1.0.2"
 #define RECONNECT_TIMEOUT   10000
 
 #include <QTcpSocket>
@@ -40,7 +40,7 @@ private:
     QList <QString> m_retained, m_topics;
     QMap <QString, QJsonObject> m_messages;
 
-    void parseData(void);
+    void parseData(QByteArray &buffer);
     void sendData(const QByteArray &data);
     void sendMessage(const QString &topic, const QJsonObject &message);
 
