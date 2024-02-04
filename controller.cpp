@@ -48,10 +48,7 @@ void Controller::parseData(QByteArray &buffer)
             m_topics.append(topic);
 
         if (m_messages.contains(topic))
-        {
             sendMessage(topic, m_messages.value(topic));
-            return;
-        }
 
         mqttSubscribe(mqttTopic(topic));
     }
