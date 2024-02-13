@@ -121,7 +121,6 @@ void Controller::mqttReceived(const QByteArray &message, const QMqttTopicName &t
     }
 
     mqttUnsubscribe(topic.name());
-    m_messages.remove(subTopic);
 }
 
 void Controller::connected(void)
