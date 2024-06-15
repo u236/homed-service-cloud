@@ -48,7 +48,7 @@ void Controller::parseData(QByteArray &buffer)
             m_topics.append(topic);
 
         if (m_messages.contains(topic))
-            sendMessage(topic, m_messages.value(topic));
+            sendMessage(topic, QJsonDocument::fromJson(m_messages.value(topic)).object());
 
         mqttSubscribe(mqttTopic(topic));
     }
@@ -109,14 +109,13 @@ void Controller::mqttConnected(void)
 void Controller::mqttReceived(const QByteArray &message, const QMqttTopicName &topic)
 {
     QString subTopic = topic.name().replace(mqttTopic(), QString());
-    QJsonObject json = QJsonDocument::fromJson(message).object();
 
     if (m_retained.contains(subTopic.split('/').value(0)))
-        m_messages.insert(subTopic, json);
+        m_messages.insert(subTopic, message);
 
     if (m_handshake && m_topics.contains(subTopic))
     {
-        sendMessage(subTopic, json);
+        sendMessage(subTopic, QJsonDocument::fromJson(message).object());
         return;
     }
 

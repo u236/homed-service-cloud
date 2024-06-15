@@ -38,7 +38,7 @@ private:
     QByteArray m_buffer;
     
     QList <QString> m_retained, m_topics;
-    QMap <QString, QJsonObject> m_messages;
+    QMap <QString, QByteArray> m_messages;
 
     void parseData(QByteArray &buffer);
     void sendData(const QByteArray &data);
