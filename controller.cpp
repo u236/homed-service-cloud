@@ -54,8 +54,6 @@ void Controller::parseData(QByteArray &buffer)
     }
     else if (action == "publish")
         mqttPublish(mqttTopic(topic), json.value("message").toObject());
-    else if (action == "unsubscribe")
-        m_topics.removeAll(topic);
 }
 
 void Controller::sendData(const QByteArray &data)
