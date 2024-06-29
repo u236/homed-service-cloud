@@ -1,0 +1,8 @@
+Package: homed-cloud
+Version:
+Architecture:
+Maintainer: u236 <mail@u236.org>
+Depends: homed-qt
+Section: misc
+Priority: standard
+Description: HOMEd Cloud Service
