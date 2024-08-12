@@ -47,8 +47,13 @@ void Controller::parseData(QByteArray &buffer)
         if (!m_topics.contains(topic))
             m_topics.append(topic);
 
-        if (m_messages.contains(topic))
-            sendMessage(topic, QJsonDocument::fromJson(m_messages.value(topic)).object());
+        for (auto it = m_messages.begin(); it != m_messages.end(); it++)
+        {
+            if (topic.endsWith('#') ? !it.key().startsWith(topic.mid(0, topic.indexOf("#"))) : it.key() != topic)
+                continue;
+
+            sendMessage(it.key(), QJsonDocument::fromJson(it.value()).object());
+        }
 
         mqttSubscribe(mqttTopic(topic));
     }
@@ -111,13 +116,19 @@ void Controller::mqttReceived(const QByteArray &message, const QMqttTopicName &t
     if (m_retained.contains(subTopic.split('/').value(0)))
         m_messages.insert(subTopic, message);
 
-    if (m_handshake && m_topics.contains(subTopic))
-    {
-        sendMessage(subTopic, QJsonDocument::fromJson(message).object());
+    if (!m_handshake)
         return;
-    }
 
-    mqttUnsubscribe(topic.name());
+    for (int i = 0; i < m_topics.count(); i++)
+    {
+        const QString item = m_topics.at(i);
+
+        if (item.endsWith('#') ? !subTopic.startsWith(item.mid(0, item.indexOf("#"))) : subTopic != item)
+            continue;
+
+        sendMessage(subTopic, QJsonDocument::fromJson(message).object());
+        break;
+    }
 }
 
 void Controller::connected(void)

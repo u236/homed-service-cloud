@@ -1,7 +1,7 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#define SERVICE_VERSION     "1.0.5"
+#define SERVICE_VERSION     "1.0.6"
 #define RECONNECT_TIMEOUT   10000
 
 #include <QTcpSocket>
