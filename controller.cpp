@@ -3,7 +3,7 @@
 #include "controller.h"
 #include "logger.h"
 
-Controller::Controller(const QString &configFile) : HOMEd(configFile), m_socket(new QTcpSocket(this)), m_timer(new QTimer(this)), m_aes(new AES128), m_dh(new DH), m_handshake(false)
+Controller::Controller(const QString &configFile) : HOMEd(configFile), m_socket(new QTcpSocket(this)), m_timer(new QTimer(this)), m_aes(new AES128), m_handshake(false)
 {
     logInfo << "Starting version" << SERVICE_VERSION;
     logInfo << "Configuration file is" << getConfig()->fileName();
@@ -135,7 +135,11 @@ void Controller::connected(void)
 {
     handshakeRequest handshake;
 
+    if (m_dh)
+        delete m_dh;
+
     logInfo << "Connected to server";
+    m_dh = new DH;
 
     handshake.prime = qToBigEndian(m_dh->prime());
     handshake.generator = qToBigEndian(m_dh->generator());
