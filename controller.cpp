@@ -145,6 +145,10 @@ void Controller::connected(void)
     handshake.generator = qToBigEndian(m_dh->generator());
     handshake.sharedKey = qToBigEndian(m_dh->sharedKey());
 
+    logInfo << "DH Prime:" << qFromBigEndian(handshake.prime);
+    logInfo << "DH Generator:" << qFromBigEndian(handshake.generator);
+    logInfo << "DH Public Key:" << qFromBigEndian(handshake.sharedKey);
+
     m_socket->write(QByteArray(reinterpret_cast <char*> (&handshake), sizeof(handshake)));
 }
 
@@ -174,6 +178,10 @@ void Controller::readyRead(void)
         memcpy(&value, data.constData(), sizeof(value));
         key = qToBigEndian(m_dh->privateKey(qFromBigEndian(value)));
         hash = QCryptographicHash::hash(QByteArray(reinterpret_cast <char*> (&key), sizeof(key)), QCryptographicHash::Md5);
+
+        logInfo << "DH Reply:" << qFromBigEndian(value);
+        logInfo << "DH Private Key:" << qFromBigEndian(key);
+        logInfo << "AES128 Key:" << hash.toHex(':').constData();
 
         m_aes->init(hash, QCryptographicHash::hash(hash, QCryptographicHash::Md5));
         sendData(QJsonDocument({{"uniqueId", m_uniqueId}, {"token", m_token}}).toJson(QJsonDocument::Compact));
