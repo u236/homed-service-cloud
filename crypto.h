@@ -10,8 +10,6 @@ class AES128
 
 public:
 
-//    AES128(const QByteArray &key, const QByteArray &iv);
-
     void init(const QByteArray &key, const QByteArray &iv);
     void cbcEncrypt(QByteArray &buffer);
     void cbcDecrypt(QByteArray &buffer);
