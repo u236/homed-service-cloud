@@ -65,10 +65,16 @@ void Controller::sendData(const QByteArray &data)
 {
     QByteArray buffer = data, packet = QByteArray(1, 0x42);
 
+    logInfo << "Pure:" << buffer.toHex(':').constData() << "-" << buffer.length();
+
     if (buffer.length() % 16)
         buffer.append(16 - buffer.length() % 16, 0);
 
+    logInfo << "Aligned:" << buffer.toHex(':').constData() << "-" << buffer.length();
+
     m_aes->cbcEncrypt(buffer);
+
+    logInfo << "Encrypted:" << buffer.toHex(':').constData() << "-" << buffer.length();
 
     for (int i = 0; i < buffer.length(); i++)
     {
@@ -81,7 +87,11 @@ void Controller::sendData(const QByteArray &data)
         }
     }
 
-    m_socket->write(packet.append(0x43));
+    packet.append(0x43);
+
+    logInfo << "Staffed:" << packet.toHex(':').constData() << "-" << packet.length();
+
+    m_socket->write(packet);
 }
 
 void Controller::sendMessage(const QString &topic, const QJsonObject &message)
@@ -174,6 +184,8 @@ void Controller::readyRead(void)
         memcpy(&value, data.constData(), sizeof(value));
         key = qToBigEndian(m_dh->privateKey(qFromBigEndian(value)));
         hash = QCryptographicHash::hash(QByteArray(reinterpret_cast <char*> (&key), sizeof(key)), QCryptographicHash::Md5);
+
+        logInfo << "AES Key:" << hash.toHex(':').constData();
 
         m_aes->init(hash, QCryptographicHash::hash(hash, QCryptographicHash::Md5));
         sendData(QJsonDocument({{"uniqueId", m_uniqueId}, {"token", m_token}}).toJson(QJsonDocument::Compact));
