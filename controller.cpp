@@ -1,3 +1,4 @@
+#include <netinet/tcp.h>
 #include <QtEndian>
 #include <QCryptographicHash>
 #include "controller.h"
@@ -133,7 +134,13 @@ void Controller::mqttReceived(const QByteArray &message, const QMqttTopicName &t
 
 void Controller::connected(void)
 {
+    int descriptor = m_socket->socketDescriptor(), keepAlive = 1, interval = 10, count = 3;
     handshakeRequest handshake;
+
+    setsockopt(descriptor, SOL_SOCKET, SO_KEEPALIVE, &keepAlive, sizeof(keepAlive));
+    setsockopt(descriptor, SOL_TCP, TCP_KEEPIDLE, &interval, sizeof(interval));
+    setsockopt(descriptor, SOL_TCP, TCP_KEEPINTVL, &interval, sizeof(interval));
+    setsockopt(descriptor, SOL_TCP, TCP_KEEPCNT, &count, sizeof(count));
 
     if (m_dh)
         delete m_dh;
