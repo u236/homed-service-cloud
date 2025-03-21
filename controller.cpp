@@ -194,7 +194,7 @@ void Controller::readyRead(void)
 
         m_buffer.append(data); // TODO: check for overflow
 
-        while((length = m_buffer.indexOf(0x43)) > 0)
+        while ((length = m_buffer.indexOf(0x43)) > 0)
         {
             for (int i = 0; i < length; i++)
             {
