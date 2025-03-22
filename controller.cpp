@@ -112,7 +112,7 @@ void Controller::mqttConnected(void)
 
 void Controller::mqttReceived(const QByteArray &message, const QMqttTopicName &topic)
 {
-    QString subTopic = topic.name().replace(mqttTopic(), QString());
+    QString subTopic = topic.name().replace(0, mqttTopic().length(), QString());
 
     if (m_retained.contains(subTopic.split('/').value(0)))
         m_messages.insert(subTopic, message);
