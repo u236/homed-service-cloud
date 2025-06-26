@@ -4,11 +4,8 @@
 #include "controller.h"
 #include "logger.h"
 
-Controller::Controller(const QString &configFile) : HOMEd(configFile), m_socket(new QTcpSocket(this)), m_timer(new QTimer(this)), m_aes(new AES128), m_dh(nullptr), m_handshake(false)
+Controller::Controller(const QString &configFile) : HOMEd(SERVICE_VERSION, configFile), m_socket(new QTcpSocket(this)), m_timer(new QTimer(this)), m_aes(new AES128), m_dh(nullptr), m_handshake(false)
 {
-    logInfo << "Starting version" << SERVICE_VERSION;
-    logInfo << "Configuration file is" << getConfig()->fileName();
-
     m_retained = {"device", "expose", "service", "status"}; // TODO: check this
 
     connect(m_socket, &QTcpSocket::connected, this, &Controller::connected);
@@ -122,7 +119,7 @@ void Controller::mqttReceived(const QByteArray &message, const QMqttTopicName &t
 
     for (int i = 0; i < m_topics.count(); i++)
     {
-        const QString item = m_topics.at(i);
+        const QString &item = m_topics.at(i);
 
         if (item.endsWith('#') ? !subTopic.startsWith(item.mid(0, item.indexOf("#"))) : subTopic != item)
             continue;
