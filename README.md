@@ -6,4 +6,4 @@
 https://github.com/u236/homed-service-common
 
 Документация:\
-https://wiki.homed.dev/page/Cloud
+https://wiki.homed.dev/cloud/
