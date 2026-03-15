@@ -8,12 +8,12 @@ Controller::Controller(const QString &configFile) : HOMEd(SERVICE_VERSION, confi
 {
     int descriptor = m_socket->socketDescriptor(), keepAlive = 1, interval = 10, count = 3;
 
-    m_retained = {"device", "expose", "service", "status"}; // TODO: check this
-
     setsockopt(descriptor, SOL_SOCKET, SO_KEEPALIVE, &keepAlive, sizeof(keepAlive));
     setsockopt(descriptor, SOL_TCP, TCP_KEEPIDLE, &interval, sizeof(interval));
     setsockopt(descriptor, SOL_TCP, TCP_KEEPINTVL, &interval, sizeof(interval));
     setsockopt(descriptor, SOL_TCP, TCP_KEEPCNT, &count, sizeof(count));
+
+    m_retained = {"device", "expose", "service", "status"}; // TODO: check this
 
     connect(m_socket, &QTcpSocket::connected, this, &Controller::connected);
     connect(m_socket, &QTcpSocket::disconnected, this, &Controller::disconnected);
