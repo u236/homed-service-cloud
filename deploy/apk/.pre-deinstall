@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/etc/init.d/homed-cloud stop
+/etc/init.d/homed-cloud disable
+
+exit 0

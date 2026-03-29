@@ -1,0 +1,7 @@
+pkgname = homed-cloud
+pkgver =
+arch =
+pkgdesc = HOMEd Cloud Service
+maintainer = u236 <mail@u236.org>
+depend = homed-qt
+backup = etc/homed/homed-cloud.conf
