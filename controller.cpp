@@ -111,7 +111,7 @@ void Controller::mqttConnected(void)
     for (int i = 0; i < m_topics.count(); i++)
         mqttSubscribe(mqttTopic(m_topics.at(i)));
 
-    mqttPublishStatus();
+    mqttPublishService();
 }
 
 void Controller::mqttReceived(const QByteArray &message, const QMqttTopicName &topic)
