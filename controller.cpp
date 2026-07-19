@@ -6,13 +6,6 @@
 
 Controller::Controller(const QString &configFile) : HOMEd(SERVICE_VERSION, configFile), m_socket(new QTcpSocket(this)), m_timer(new QTimer(this)), m_aes(new AES128), m_dh(nullptr), m_handshake(false)
 {
-    int descriptor = m_socket->socketDescriptor(), keepAlive = 1, interval = 10, count = 3;
-
-    setsockopt(descriptor, SOL_SOCKET, SO_KEEPALIVE, &keepAlive, sizeof(keepAlive));
-    setsockopt(descriptor, SOL_TCP, TCP_KEEPIDLE, &interval, sizeof(interval));
-    setsockopt(descriptor, SOL_TCP, TCP_KEEPINTVL, &interval, sizeof(interval));
-    setsockopt(descriptor, SOL_TCP, TCP_KEEPCNT, &count, sizeof(count));
-
     m_retained = {"device", "expose", "service", "status"}; // TODO: check this
 
     connect(m_socket, &QTcpSocket::connected, this, &Controller::connected);
@@ -138,12 +131,19 @@ void Controller::mqttReceived(const QByteArray &message, const QMqttTopicName &t
 
 void Controller::connected(void)
 {
+    int descriptor = m_socket->socketDescriptor(), keepAlive = 1, interval = 10, count = 3;
     handshakeRequest handshake;
+
+    setsockopt(descriptor, SOL_SOCKET, SO_KEEPALIVE, &keepAlive, sizeof(keepAlive));
+    setsockopt(descriptor, SOL_TCP, TCP_KEEPIDLE, &interval, sizeof(interval));
+    setsockopt(descriptor, SOL_TCP, TCP_KEEPINTVL, &interval, sizeof(interval));
+    setsockopt(descriptor, SOL_TCP, TCP_KEEPCNT, &count, sizeof(count));
+
+    logInfo << "Connected to server";
 
     if (m_dh)
         delete m_dh;
 
-    logInfo << "Connected to server";
     m_dh = new DH;
 
     handshake.prime = qToBigEndian(m_dh->prime());
