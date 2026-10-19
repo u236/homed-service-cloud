@@ -53,9 +53,9 @@ private slots:
     void mqttConnected(void) override;
     void mqttReceived(const QByteArray &message, const QMqttTopicName &topic) override;
 
+    void errorOccurred(QAbstractSocket::SocketError error);
     void connected(void);
     void disconnected(void);
-    void errorOccurred(QAbstractSocket::SocketError error);
     void readyRead(void);
 
     void connectToHost(void);

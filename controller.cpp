@@ -8,10 +8,10 @@ Controller::Controller(const QString &configFile) : HOMEd(SERVICE_VERSION, confi
 {
     m_retained = {"device", "expose", "service", "status"}; // TODO: check this
 
+    connect(m_socket, &QTcpSocket::errorOccurred, this, &Controller::errorOccurred);
     connect(m_socket, &QTcpSocket::connected, this, &Controller::connected);
     connect(m_socket, &QTcpSocket::disconnected, this, &Controller::disconnected);
     connect(m_socket, &QTcpSocket::readyRead, this, &Controller::readyRead);
-    connect(m_socket, &QTcpSocket::errorOccurred, this, &Controller::errorOccurred);
     connect(m_timer, &QTimer::timeout, this, &Controller::connectToHost);
 
     m_uniqueId = getConfig()->value("cloud/uniqueid").toString();
@@ -129,6 +129,13 @@ void Controller::mqttReceived(const QByteArray &message, const QMqttTopicName &t
     }
 }
 
+void Controller::errorOccurred(QAbstractSocket::SocketError error)
+{
+    logWarning << "Server connection error:" << error;
+    m_timer->start(RECONNECT_TIMEOUT);
+    m_handshake = false;
+}
+
 void Controller::connected(void)
 {
     int descriptor = m_socket->socketDescriptor(), keepAlive = 1, interval = 10, count = 3;
@@ -156,13 +163,6 @@ void Controller::connected(void)
 void Controller::disconnected(void)
 {
     logInfo << "Disconnected from server";
-    m_timer->start(RECONNECT_TIMEOUT);
-    m_handshake = false;
-}
-
-void Controller::errorOccurred(QAbstractSocket::SocketError error)
-{
-    logWarning << "Server connection error:" << error;
     m_timer->start(RECONNECT_TIMEOUT);
     m_handshake = false;
 }
