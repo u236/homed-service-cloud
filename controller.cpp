@@ -138,13 +138,14 @@ void Controller::errorOccurred(QAbstractSocket::SocketError error)
 
 void Controller::connected(void)
 {
-    int descriptor = m_socket->socketDescriptor(), keepAlive = 1, interval = 10, count = 3;
+    int descriptor = m_socket->socketDescriptor(), keepAlive = 1, interval = 10, count = 2, timeout = 30000;
     handshakeRequest handshake;
 
     setsockopt(descriptor, SOL_SOCKET, SO_KEEPALIVE, &keepAlive, sizeof(keepAlive));
     setsockopt(descriptor, SOL_TCP, TCP_KEEPIDLE, &interval, sizeof(interval));
     setsockopt(descriptor, SOL_TCP, TCP_KEEPINTVL, &interval, sizeof(interval));
     setsockopt(descriptor, SOL_TCP, TCP_KEEPCNT, &count, sizeof(count));
+    setsockopt(descriptor, SOL_TCP, TCP_USER_TIMEOUT, &timeout, sizeof(timeout));
 
     logInfo << "Connected to server";
 
